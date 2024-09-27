@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>CineBot</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700,300">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.1.2/css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400&family=Finger+Paint&display=swap">
+  </head>
+  <body>
+    <div class="card">
+      <div id="header">
+        <h1>CineBot!</h1>
+      </div>
+      <div id="message-section">
+        <div class="message" id="bot">
+          <span id="bot-response">Hello.. I'm listening! Go on..</span>
+        </div>
+      </div>
+      <div id="input-section">
+        <input id="input" type="text" placeholder="Type a message" autocomplete="off" autofocus="autofocus"/>
+        <button class="send" onclick="sendMessage()">
+          <div class="circle">
+            <i class="zmdi zmdi-mail-send"></i>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Updated JavaScript -->
+    <script>
+      const userMessage = [
+        ["hi", "hello", "hey"],
+        ["recommend a movie", "suggest a movie", "what should i watch"],
+        ["action movie", "romantic movie", "comedy movie"],
+        ["who are you", "what are you", "are you human"]
+        // Add more user message triggers...
+      ];
+
+      const botReply = [
+        ["Hello! Ready for some movie recommendations?", "Hi there! Looking for a great film?"],
+        ["I think you'll love 'Inception' if you're into mind-bending thrillers.", "How about watching 'The Dark Knight'?"],
+        ["'Mad Max: Fury Road' for action! Or if you're in a romantic mood, try 'La La Land'.", "'The Hangover' is a good laugh!"],
+        ["I am CineBot, here to help you find the best movies!", "I'm just a bot here to recommend great films!"]
+        // Add more bot replies...
+      ];
+
+      const alternative = [
+        "Sorry, can you ask that differently?", 
+        "Hmm... I'm not sure about that.",
+        "I don't understand, but I can help with movie recommendations!",
+        "Can you ask about movies or genres?"
+      ];
+
+      const synth = window.speechSynthesis;
+
+      function voiceControl(string) {
+        let u = new SpeechSynthesisUtterance(string);
+        u.text = string;
+        u.lang = "en-us";
+        u.volume = 1;
+        u.rate = 1;
+        u.pitch = 1;
+        synth.speak(u);
+      }
+
+      function sendMessage() {
+        const inputField = document.getElementById("input");
+        let input = inputField.value.trim();
+        if (input != "") {
+          output(input);
+        }
+        inputField.value = "";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const inputField = document.getElementById("input");
+        inputField.addEventListener("keydown", function (e) {
+          if (e.code === "Enter") {
+            let input = inputField.value.trim();
+            if (input != "") {
+              output(input);
+            }
+            inputField.value = "";
+          }
+        });
+      });
+
+      function output(input) {
+        let product;
+        let text = input.toLowerCase().replace(/[^\w\s\d]/gi, "");  // Clean up the input
+
+        text = text
+          .replace(/ a /g, " ")
+          .replace(/i feel /g, "")
+          .replace(/whats/g, "what is")
+          .replace(/please /g, "")
+          .replace(/ please/g, "")
+          .trim();
+
+        let comparedText = compare(userMessage, botReply, text);
+
+        product = comparedText
+          ? comparedText
+          : alternative[Math.floor(Math.random() * alternative.length)];
+
+        addChat(input, product);
+      }
+
+      function compare(triggerArray, replyArray, string) {
+        let item;
+        for (let x = 0; x < triggerArray.length; x++) {
+          for (let y = 0; y < triggerArray[x].length; y++) {
+            if (string.includes(triggerArray[x][y])) {  // Partial match instead of exact
+              let items = replyArray[x];
+              item = items[Math.floor(Math.random() * items.length)];
+              break;
+            }
+          }
+        }
+        return item;
+      }
+
+      function addChat(input, product) {
+        const mainDiv = document.getElementById("message-section");
+
+        let userDiv = document.createElement("div");
+        userDiv.id = "user";
+        userDiv.classList.add("message");
+        userDiv.innerHTML = `<span id="user-response">${input}</span>`;
+        mainDiv.appendChild(userDiv);
+
+        let botDiv = document.createElement("div");
+        botDiv.id = "bot";
+        botDiv.classList.add("message");
+        botDiv.innerHTML = `<span id="bot-response">${product}</span>`;
+        mainDiv.appendChild(botDiv);
+
+        var scroll = document.getElementById("message-section");
+        scroll.scrollTop = scroll.scrollHeight;
+
+        voiceControl(product);
+      }
+    </script>
+  </body>
+</html>
